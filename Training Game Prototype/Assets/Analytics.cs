@@ -54,7 +54,9 @@ public class Analytics
 
     public void saveData()
     {
-        using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\Anthony\Documents\GitHub\ReFlex\Training Game Prototype\data.txt"))
+        string p = Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/'));
+        string fn = p+@"\data.txt";
+        using (System.IO.StreamWriter file = new System.IO.StreamWriter(@fn))
         {
 
             for (int i = 0; i < num; i++)
