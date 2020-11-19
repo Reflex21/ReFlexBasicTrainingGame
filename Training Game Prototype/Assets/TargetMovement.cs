@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class TargetMovement : MonoBehaviour
 {
+
+    public float speed = 1;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -15,7 +18,7 @@ public class TargetMovement : MonoBehaviour
     {
         // Create random variable
         float xPos = Random.Range(-10, 10);
-        float yVel = Random.Range(9, 16);
+        float yVel = Random.Range(speed*3, speed*4);
         float xVel = Random.Range(-4, 4);
 
         // Move object somewhere
