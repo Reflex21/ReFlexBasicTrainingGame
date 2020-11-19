@@ -37,8 +37,9 @@ public class Game : MonoBehaviour
             // Add Sprite
             gameObj.AddComponent<SpriteRenderer>();
             Console.Write(SPRITES);
+
             // Change Sprite
-            gameObj.transform.GetComponent<SpriteRenderer>().sprite = SPRITES[i];
+            gameObj.transform.GetComponent<SpriteRenderer>().sprite = SPRITES[i % 6];
 
             currSpeed++;
         }
