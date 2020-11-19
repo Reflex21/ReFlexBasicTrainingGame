@@ -39,4 +39,13 @@ public class TargetMovement : MonoBehaviour
 
         
     }
+
+    void OnMouseOver()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Destroy(gameObject);
+            print("Click");
+        }
+    }
 }
