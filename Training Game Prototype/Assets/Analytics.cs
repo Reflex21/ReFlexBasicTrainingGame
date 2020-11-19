@@ -1,13 +1,13 @@
 ﻿using System;
-using Utilities;
+using UnityEngine;
 
 public class Analytics
 {
-    private int MAX_DATA_POINTS = 10;
+    private int MAX_DATA_POINTS;
+    private int num;
     private double[,] data_points;
     private int[] data_pointer;
     private double[] speeds;
-    private StopwatchWrapper[] sw_arr;
     
     // Variations is the number of different data types we are collecting
     // Data points is the max number of data points we collect for each
@@ -17,15 +17,15 @@ public class Analytics
         data_points = new double[variations, num_data];
         data_pointer = new int[variations];
         speeds = new double[variations];
-        sw_arr = new StopwatchWrapper[variations];
+        num = variations;
     }
 
-    void setSpeed(int variation, double speed)
+    public void setSpeed(int variation, double speed)
     {
         speeds[variation] = speed;
     }
 
-    void addDataPoint(int variation, double data_point)
+    public void addDataPoint(int variation, double data_point)
     {
         int index = data_pointer[variation];
         if(index < MAX_DATA_POINTS)
@@ -34,21 +34,42 @@ public class Analytics
             data_pointer[variation] += 1;
         } else
         {
-            data_points[variation, index] = data_point;
+            data_points[variation, 0] = data_point;
             data_pointer[variation] = 0;
         }
     }
 
-    void printDataPoints(int variation)
+    public void printDataPoints()
     {
-        for(int i = 0; i < variation; i++)
+        for(int i = 0; i < num; i++)
         {
-            for (int j = 0; j < variation; j++)
+            for (int j = 0; j < MAX_DATA_POINTS; j++)
             {
-                Console.Write(data_points[i, j]);
-                Console.Write(" ");
+                Debug.Log(data_points[i, j]);
+                Debug.Log(" ");
             }
-            Console.Write("\r\n");
+            Debug.Log("\r\n");
+        }
+    }
+
+    public void saveData()
+    {
+        using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\Anthony\Documents\GitHub\ReFlex\Training Game Prototype\data.txt"))
+        {
+
+            for (int i = 0; i < num; i++)
+            {
+                for (int j = 0; j < MAX_DATA_POINTS; j++)
+                {
+                    file.Write(data_points[i, j]);
+                    if(j != MAX_DATA_POINTS - 1)
+                    {
+                        file.Write(",");
+                    }
+                    
+                }
+                file.Write("\r\n");
+            }
         }
     }
 }

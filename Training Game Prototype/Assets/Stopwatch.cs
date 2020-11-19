@@ -14,32 +14,32 @@ namespace Utilities
 			sw = new Stopwatch();
 		}
 
-		void reset()
+		public void reset()
 		{
 			total_time = 0;
 			calls = 0;
 			sw.Reset();
 		}
 
-		void start()
+		public void start()
 		{
 			sw.Start();
 			calls++;
 		}
 
-		void stop()
+		public void stop()
 		{
 			sw.Stop();
 			total_time += (double)sw.Elapsed.TotalMilliseconds;
 			sw.Reset();
 		}
 
-		double latency()
+		public double latency()
 		{
 			return total_time;
 		}
 
-		double avg_latency()
+		public double avg_latency()
 		{
 			return (total_time / calls);
 		}
