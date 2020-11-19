@@ -54,6 +54,8 @@ public class Analytics
 
     public void saveData()
     {
+        double sum = 0;
+        double cnt = 0;
         string p = Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/'));
         string fn = p+@"\data.txt";
         using (System.IO.StreamWriter file = new System.IO.StreamWriter(@fn))
@@ -63,6 +65,8 @@ public class Analytics
             {
                 for (int j = 0; j < MAX_DATA_POINTS; j++)
                 {
+                    sum += data_points[i, j];
+                    cnt++;
                     file.Write(data_points[i, j]);
                     if(j != MAX_DATA_POINTS - 1)
                     {
@@ -72,6 +76,8 @@ public class Analytics
                 }
                 file.Write("\r\n");
             }
+
+            file.WriteLine("Avg. Reflex Time was: " + sum / cnt);
         }
     }
 }
