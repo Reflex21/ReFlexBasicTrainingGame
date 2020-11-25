@@ -3,6 +3,7 @@ import Image from 'next/image'
 import s from 'styled-components'
 import axios from 'axios'
 import Upload from './Upload'
+import Settings from './Settings'
 import blankUserIcon from '../../../blankUser.png' // Temp photo
 
 const Wrapper = s.div`
@@ -15,13 +16,13 @@ const LeftSideBar = s.ul`
   height: calc(100vh - 70px);
 `
 
-const SideBar = () => {
-  const [currentUser, setCurrentUser] = useState('')
+const SideBar = ({ setCurrentView }) => {
   const [name, setName] = useState('User')
 
   return (
     <>
       <Upload />
+      <Settings />
       <Wrapper className="col-2 bg-light p-0">
         <LeftSideBar className="nav nav-pills flex-column">
           <div className="nav-item border-bottom text-center pt-3">
@@ -35,13 +36,31 @@ const SideBar = () => {
             <h6 className="text-center">Welcome {name}!</h6>
           </div>
           <li className="nav-item border-bottom">
-            <a className="nav-link text-center" href="#/">Insights</a>
+            <a
+              className="nav-link text-center"
+              href="#/"
+              onClick={e => {
+                e.preventDefault()
+                setCurrentView(0)
+              }}
+            >
+              Insights
+            </a>
           </li>
           <li className="nav-item border-bottom">
-            <a className="nav-link text-center" href="#/">Training</a>
+            <a
+              className="nav-link text-center"
+              href="#/"
+              onClick={e => {
+                e.preventDefault()
+                setCurrentView(1)
+              }}
+            >
+              Training
+            </a>
           </li>
           <li className="nav-item border-bottom">
-            <a className="nav-link text-center" href="#/">Settings</a>
+            <a className="nav-link text-center" href="#/" data-toggle="modal" data-target="#settingsBox"> Settings </a>
           </li>
           <li className="nav-item border-bottom">
             <a className="nav-link text-center" href="#/" data-toggle="modal" data-target="#uploadBox">Upload Data</a>
