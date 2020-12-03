@@ -6,26 +6,8 @@ import SideBar from './SideBar'
 import InsightView from './InsightView'
 import TrainingView from './TrainingView'
 
-const HomePage = ({ isLoggedIn }) => {
+const HomePage = ({ isLoggedIn, currentUser }) => {
   const [currentView, setCurrentView] = useState(0)
-  const [currentUser, setCurrentUser] = useState('User')
-
-  const whoIsActive = async () => {
-    const res = await axios.get('/account/active')
-    return res
-  }
-
-  useEffect(() => {
-    const intervalID = setInterval(() => {
-      whoIsActive().then(res => {
-        if (res.data !== '') {
-          setCurrentUser(res.data)
-        }
-      })
-    }, 100)
-
-    return () => clearInterval(intervalID)
-  }, [])
 
   return (
     <>
@@ -42,7 +24,7 @@ const HomePage = ({ isLoggedIn }) => {
               (currentView === 0) && (<InsightView currentUser={currentUser} />)
             }
             {
-              (currentView === 1) && (<TrainingView />)
+              (currentView === 1) && (<TrainingView currentUser={currentUser} />)
             }
           </div>
         </div>

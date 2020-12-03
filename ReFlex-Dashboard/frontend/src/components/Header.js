@@ -13,9 +13,8 @@ const Header = () => {
 
   const logout = async () => {
     await axios.post('/account/logout')
-    history.push('/')
+    history.push('/login')
   }
-
 
   return (
     <nav className="navbar navbar-dark bg-dark">

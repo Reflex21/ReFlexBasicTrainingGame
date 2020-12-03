@@ -50,6 +50,7 @@ router.post('/login', (req, res) => {
 router.post('/logout', isAuthenticated, (req, res) => {
   req.session.username = ''
   req.session.password = ''
+  console.log('Logged Out')
   res.send('Logged Out')
 })
 

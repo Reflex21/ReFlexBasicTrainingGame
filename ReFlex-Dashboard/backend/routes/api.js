@@ -1,16 +1,17 @@
 const express = require('express')
 
 const User = require('../models/user')
-const Data = require('../models/data')
+const DataPoint = require('../models/datapoint')
 const isAuthenticated = require('../../middlewares/isAuthenticated')
 
 const router = express.Router()
 
 // Get all data for a specific user
-router.get('/data/:username', async (req, res) => {
+router.get('/data/:username/:type', async (req, res) => {
   try {
-    const { username } = req.params
-    Data.findOne({ username }, (err, data, next) => {
+    const { username, type } = req.params
+    console.log(req.params)
+    DataPoint.find({ username, type }, (err, data, next) => {
       if (err) {
         next(err)
       }
@@ -30,7 +31,7 @@ router.post('/data/add', isAuthenticated, async (req, res) => {
   console.log(data)
   try {
     if (data.type === 'accuracy') {
-      await Data.create({
+      await DataPoint.create({
         username,
         type: data.type,
         trial: data.values.trial,
@@ -38,7 +39,7 @@ router.post('/data/add', isAuthenticated, async (req, res) => {
       })
       res.send('Data Added')
     } else if (data.type === 'time') {
-      await Data.create({
+      await DataPoint.create({
         username,
         type: data.type,
         trial: data.values.trial,

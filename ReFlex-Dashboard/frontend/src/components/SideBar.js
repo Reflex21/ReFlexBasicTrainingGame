@@ -20,7 +20,7 @@ const SideBar = ({ setCurrentView, currentUser }) => {
 
   const importData = async data => {
     const res = await axios.post('/api/data/add', { data })
-    if (res.data !== '') {
+    if (res.data !== 'Data Added') {
       alert(res.data)
     }
   }

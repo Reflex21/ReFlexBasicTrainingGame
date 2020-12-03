@@ -14,6 +14,7 @@ import SignUp from './components/SignUp'
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [currentUser, setCurrentUser] = useState('User')
 
   const whoIsActive = async () => {
     const res = await axios.get('/account/active')
@@ -27,12 +28,14 @@ const App = () => {
           setIsLoggedIn(false)
         } else {
           setIsLoggedIn(true)
+          setCurrentUser(res.data)
         }
       })
     }, 100)
 
     return () => clearInterval(intervalID)
   }, [])
+
 
   return (
     <Router>
@@ -44,7 +47,7 @@ const App = () => {
           <Login setIsLoggedIn={setIsLoggedIn} />
         </Route>
         <Route path="/">
-          <HomePage isLoggedIn={isLoggedIn} />
+          <HomePage currentUser={currentUser} isLoggedIn={isLoggedIn} />
         </Route>
       </Switch>
     </Router>

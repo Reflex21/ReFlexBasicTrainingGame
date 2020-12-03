@@ -2,15 +2,15 @@ import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import { ScatterChart, Scatter, Tooltip, YAxis, XAxis, Label } from 'recharts'
 
-const AccuracyGraph = ({ currentUser }) => {
+const ReactionTimeGraph = ({ currentUser }) => {
   const [showLatest, setShowLatest] = useState(true)
-  const [accuracyData, setAccuracyData] = useState([])
+  const [reactionTimeData, setReactionTimeData] = useState([])
   const stateRef = useRef()
 
   stateRef.current = showLatest
 
-  const getAccuracyData = async () => {
-    const res = await axios.get(`/api/data/${currentUser}/accuracy`)
+  const getReactionTimeData = async () => {
+    const res = await axios.get(`/api/data/${currentUser}/time`)
     return res
   }
 
@@ -20,7 +20,7 @@ const AccuracyGraph = ({ currentUser }) => {
     for (let i = 0; i < len; i += 1) {
       formattedData.push({
         trial: data.trial[i],
-        accuracy: data.accuracy[i],
+        time: data.time[i],
       })
     }
     return formattedData
@@ -39,24 +39,25 @@ const AccuracyGraph = ({ currentUser }) => {
   const getAvg = data => {
     const avg = []
     data.forEach((item, index) => {
-      const avgAccuracy = (item.accuracy.reduce((a, b) => a + b, 0)) / item.accuracy.length
+      const avgTime = (item.time.reduce((a, b) => a + b, 0)) / item.time.length
       avg.push({
         trial: index + 1,
-        accuracy: avgAccuracy,
+        time: avgTime,
       })
     })
+    console.log(avg)
     return avg
   }
 
   useEffect(() => {
     const intervalID = setInterval(() => {
-      getAccuracyData().then(res => {
+      getReactionTimeData().then(res => {
         if (stateRef.current) {
           const latest = getLatest(res.data)
-          setAccuracyData(reformatData(latest))
+          setReactionTimeData(reformatData(latest))
         } else {
           const avg = getAvg(res.data)
-          setAccuracyData(avg)
+          setReactionTimeData(avg)
         }
       })
     }, 1000)
@@ -67,7 +68,7 @@ const AccuracyGraph = ({ currentUser }) => {
   return (
     <div className="card">
       <div className="card-body">
-        <h5 className="card-title">Accuracy</h5>
+        <h5 className="card-title">Reaction Time</h5>
         <ScatterChart
           width={600}
           height={300}
@@ -77,8 +78,8 @@ const AccuracyGraph = ({ currentUser }) => {
         >
           <Tooltip
             formatter={(value, name) => {
-              if (name === 'Accuracy') {
-                return `${value * 100}%`
+              if (name === 'Reaction Time') {
+                return `${value}ms`
               }
               return value
             }}
@@ -87,10 +88,10 @@ const AccuracyGraph = ({ currentUser }) => {
           <XAxis type="number" dataKey="trial" name="Trial" allowDecimals={false} domain={['dataMin', 'dataMax']}>
             <Label value="Trial" position="bottom" />
           </XAxis>
-          <YAxis type="number" dataKey="accuracy" name="Accuracy" domain={[0, 1]}>
-            <Label value="Accuracy (%)" angle={-90} position="left" />
+          <YAxis type="number" dataKey="time" name="Reaction Time" domain={[0, dataMax => Math.ceil(dataMax / 1000) * 1000]}>
+            <Label value="Reaction Time (ms)" angle={-90} position="left" />
           </YAxis>
-          <Scatter name="Accuracy" data={accuracyData} fill="#82ca9d" line shape="circle" />
+          <Scatter name="Reaction Time" data={reactionTimeData} fill="#66a8ff" line shape="circle" />
         </ScatterChart>
       </div>
       <div className="btn-group text-center">
@@ -113,4 +114,4 @@ const AccuracyGraph = ({ currentUser }) => {
   )
 }
 
-export default AccuracyGraph
+export default ReactionTimeGraph
