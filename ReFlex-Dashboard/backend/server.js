@@ -20,7 +20,7 @@ app.use(express.json())
 app.use(
   cookieSession({
     name: 'local-session',
-    keys: ['spooky'],
+    keys: ['reflex'],
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   }),
 )

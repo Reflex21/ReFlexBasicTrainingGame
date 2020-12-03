@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useHistory } from 'react-router-dom'
 import s from 'styled-components'
 import axios from 'axios'
 
@@ -8,6 +9,13 @@ const NavItems = s.ul`
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const history = useHistory()
+
+  const logout = async () => {
+    await axios.post('/account/logout')
+    history.push('/')
+  }
+
 
   return (
     <nav className="navbar navbar-dark bg-dark">
@@ -18,7 +26,7 @@ const Header = () => {
           <>
             <ul className="navbar-nav px-3">
               <li className="nav-item text-nowrap">
-                <a className="nav-link" href="#/">Logout</a>
+                <a className="nav-link" href="#/" onClick={() => logout()}>Logout</a>
               </li>
             </ul>
           </>

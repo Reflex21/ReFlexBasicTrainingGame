@@ -3,7 +3,9 @@ const { Schema, Number, model } = require('mongoose')
 const dataSchema = new Schema({
   username: { type: String, required: true },
   type: { type: String, required: true },
-  values: [{ x: Number, y: Number }],
+  trial: [{ type: Number }],
+  accuracy: [{ type: Number }],
+  time: [{ type: Number }],
 })
 
 module.exports = model('Data', dataSchema)

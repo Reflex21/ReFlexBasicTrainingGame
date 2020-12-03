@@ -6,9 +6,9 @@ import SideBar from './SideBar'
 import InsightView from './InsightView'
 import TrainingView from './TrainingView'
 
-const HomePage = () => {
+const HomePage = ({ isLoggedIn }) => {
   const [currentView, setCurrentView] = useState(0)
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const [currentUser, setCurrentUser] = useState('User')
 
   const whoIsActive = async () => {
     const res = await axios.get('/account/active')
@@ -18,29 +18,28 @@ const HomePage = () => {
   useEffect(() => {
     const intervalID = setInterval(() => {
       whoIsActive().then(res => {
-        if (res.data === '') {
-          setIsLoggedIn(false)
-        } else {
-          setIsLoggedIn(true)
+        if (res.data !== '') {
+          setCurrentUser(res.data)
         }
       })
-    }, 1000)
+    }, 100)
 
     return () => clearInterval(intervalID)
   }, [])
 
   return (
     <>
+      <Header />
       {(isLoggedIn) && (
       <>
-        <Header />
         <div className="container-fluid w-100 h-100">
           <div className="row">
             <SideBar
+              currentUser={currentUser}
               setCurrentView={setCurrentView}
             />
             {
-              (currentView === 0) && (<InsightView />)
+              (currentView === 0) && (<InsightView currentUser={currentUser} />)
             }
             {
               (currentView === 1) && (<TrainingView />)
@@ -52,20 +51,6 @@ const HomePage = () => {
       {(!isLoggedIn) && (
         <Redirect to="/login" />
       )}
-      <Header />
-      <div className="container-fluid w-100 h-100">
-        <div className="row">
-          <SideBar
-            setCurrentView={setCurrentView}
-          />
-          {
-            (currentView === 0) && (<InsightView />)
-          }
-          {
-            (currentView === 1) && (<TrainingView />)
-          }
-        </div>
-      </div>
     </>
   )
 }

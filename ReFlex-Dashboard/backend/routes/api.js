@@ -27,14 +27,25 @@ router.get('/data/:username', async (req, res) => {
 router.post('/data/add', isAuthenticated, async (req, res) => {
   const { data } = req.body
   const { username } = req.session
-
+  console.log(data)
   try {
-    await Data.create({
-      username,
-      type: data.type,
-      value: data.value,
-    })
-    res.send('Data Added')
+    if (data.type === 'accuracy') {
+      await Data.create({
+        username,
+        type: data.type,
+        trial: data.values.trial,
+        accuracy: data.values.accuracy,
+      })
+      res.send('Data Added')
+    } else if (data.type === 'time') {
+      await Data.create({
+        username,
+        type: data.type,
+        trial: data.values.trial,
+        time: data.values.time,
+      })
+      res.send('Data Added')
+    }
   } catch (err) {
     res.send(`Failed to Add Data - ${err}`)
   }
