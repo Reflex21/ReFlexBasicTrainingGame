@@ -6,7 +6,7 @@ using UnityEngine;
 public class Ball : MonoBehaviour
 {
 
-
+	public GameManager gameManager;
 	Vector3 velocity; 
 
 	[Range(0,1)]
@@ -51,6 +51,7 @@ public class Ball : MonoBehaviour
 			case "Bounds North":
 			case "Bounds South":
 				ResetBall();
+				gameManager.IncrementScore(collision.transform.name);
 				return; 
 			case "Player Paddle":
 			case "Computer Paddle":
