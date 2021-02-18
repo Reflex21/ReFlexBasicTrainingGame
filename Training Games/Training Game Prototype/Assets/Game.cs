@@ -1,38 +1,47 @@
-﻿using System;
+﻿#undef DEBUG
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Tobii.Gaming;
+
 
 public class Game : MonoBehaviour
 {
-    Analytics analytics;
-    private const int MAX_TARGETS = 5;
+    Analytics clickAnalytics;
+    Analytics gazeAnalytics;
+    private const int MAX_TARGETS = 10;
     private const int MAX_DATA_POINTS = 1;
     public Sprite[] SPRITES;
     private bool finished = false;
-    private bool isRunning = true; 
+    private GazePoint gazePoint;
+    private int currentTarget = 0;
+    private bool newTarget = true;
 
     // Start is called before the first frame update
     void Start()
     {
-        analytics = new Analytics(MAX_TARGETS, MAX_DATA_POINTS);
-        float currSpeed = 1;
-
+#if DEBUG
+        Debug.Log("Debug mode active");
+#else
+        Vector2 screenSize = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height));
+        Debug.Log("screen x: " + screenSize.x + "screen y: " + screenSize.y);
+        clickAnalytics = new Analytics(MAX_TARGETS, MAX_DATA_POINTS);
+        gazeAnalytics = new Analytics(MAX_TARGETS, MAX_DATA_POINTS);
         for (int i = 0; i < MAX_TARGETS; i++)
         {
             string objName = "Target" + i;
             var gameObj = new GameObject(objName);
+            Debug.Log("Created Target" +i);
 
-            // Add Movement Script
-            string ScriptName = "TargetMovement";
+
+            // Add Logic Script
+            string ScriptName = "TargetLogic";
             System.Type MyScriptType = System.Type.GetType(ScriptName + ",Assembly-CSharp");
             gameObj.AddComponent(MyScriptType);
 
-            // Set Speed
-            gameObj.transform.GetComponent<TargetMovement>().speed = currSpeed;
-
-            // Add Rigid 2D Body
-            gameObj.AddComponent<Rigidbody2D>();
+            Debug.Log("Added Script to Target" + i);
 
             // Add Box Collider
             gameObj.AddComponent<BoxCollider2D>();
@@ -44,38 +53,71 @@ public class Game : MonoBehaviour
             // Change Sprite
             gameObj.transform.GetComponent<SpriteRenderer>().sprite = SPRITES[i % 6];
 
-            currSpeed++;
-            //Debug.Log("Made 1 Target");
         }
+#endif
     }
+
 
     // Update is called once per frame
     void Update()
     {
+#if DEBUG
+        gazePoint = TobiiAPI.GetGazePoint();
+        Debug.Log("X: " + gazePoint.Screen.x + ", Y: " + gazePoint.Screen.y);
+#else
         if (finished)
         {
             Debug.Log("Complete!");
-            this.analytics.printDataPoints();
-            this.analytics.saveData();
+            this.clickAnalytics.printDataPoints();
+            this.gazeAnalytics.printDataPoints();
+            this.clickAnalytics.saveData("clickData.txt");
+            this.gazeAnalytics.saveData("gazeData.txt");
             AppHelper.Quit();
         }
         else
         {
-            bool allFinished = true;
-            for (int i = 0; i < MAX_TARGETS; i++)
+            if(newTarget)
             {
-                string objName = "Target" + i;
+                // Grab the current target
+                string objName = "Target" + currentTarget;
                 var gameObj = GameObject.Find(objName);
-                //Debug.Log(i+" - " +(gameObj.GetComponent<TargetMovement>().clicked));
-                allFinished &= (gameObj.GetComponent<TargetMovement>().clicked);
-                if ((gameObj.GetComponent<TargetMovement>().clicked) && !(gameObj.GetComponent<TargetMovement>().counted))
+                Debug.Log("grabbed target " + currentTarget);
+
+                // Make it visible
+                gameObj.GetComponent<TargetLogic>().showTarget();
+                Debug.Log("making target " + currentTarget + "visible");
+                newTarget = false;
+            }
+            else
+            {
+                // Grab the current target
+                string objName = "Target" + currentTarget;
+                var gameObj = GameObject.Find(objName);
+                Debug.Log("grabbed target " + currentTarget);
+
+                if (gameObj.GetComponent<TargetLogic>().clicked)
                 {
-                    this.analytics.addDataPoint(i, gameObj.GetComponent<TargetMovement>().sw.latency());
-                    gameObj.GetComponent<TargetMovement>().counted = true;
+                    // Store data into analytics class
+                    this.clickAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().sw_click.latency());
+                    this.gazeAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().sw_gaze.latency());
+                    gameObj.SetActive(false);
+                    Delay(5.0f);
+                    newTarget = true;
+                    currentTarget++;
+                    
                 }
             }
-            finished = allFinished;
+
+            if(currentTarget >= MAX_TARGETS)
+            {
+                finished = true;
+            }
         }
-        
+#endif
+    }
+
+    private IEnumerable Delay(float seconds)
+    {
+        yield return new WaitForSecondsRealtime(seconds);
     }
 }

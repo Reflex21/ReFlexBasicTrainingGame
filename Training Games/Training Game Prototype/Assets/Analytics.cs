@@ -52,12 +52,12 @@ public class Analytics
         }
     }
 
-    public void saveData()
+    public void saveData(String filename)
     {
         double sum = 0;
         double cnt = 0;
         string p = Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/'));
-        string fn = p+@"\data.txt";
+        string fn = p+@"\"+ filename;
         using (System.IO.StreamWriter file = new System.IO.StreamWriter(@fn))
         {
 
