@@ -1,6 +1,7 @@
 ﻿#undef DEBUG
 
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,15 +10,15 @@ using Tobii.Gaming;
 
 public class Game : MonoBehaviour
 {
-    Analytics clickAnalytics;
-    Analytics gazeAnalytics;
-    private const int MAX_TARGETS = 10;
-    private const int MAX_DATA_POINTS = 1;
+    Analytics performanceAnalytics;
+    private const int MAX_TARGETS = 20;
+    private const int MAX_DATA_POINTS = 5; // clickTime, gazeTime, gazeDistance, TargetX, TargetY
     public Sprite[] SPRITES;
     private bool finished = false;
     private GazePoint gazePoint;
     private int currentTarget = 0;
     private bool newTarget = true;
+    private GameObject[] targets = new GameObject[MAX_TARGETS];
 
     // Start is called before the first frame update
     void Start()
@@ -25,23 +26,25 @@ public class Game : MonoBehaviour
 #if DEBUG
         Debug.Log("Debug mode active");
 #else
-        Vector2 screenSize = Camera.main.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height));
-        Debug.Log("screen x: " + screenSize.x + "screen y: " + screenSize.y);
-        clickAnalytics = new Analytics(MAX_TARGETS, MAX_DATA_POINTS);
-        gazeAnalytics = new Analytics(MAX_TARGETS, MAX_DATA_POINTS);
+        performanceAnalytics = new Analytics(MAX_TARGETS, MAX_DATA_POINTS, false); 
+        performanceAnalytics.setName(0, "ClickTime");
+        performanceAnalytics.setName(1, "GazeTime");
+        performanceAnalytics.setName(2, "GazeDistance");
+        performanceAnalytics.setName(3, "TargetX");
+        performanceAnalytics.setName(4, "TargetY");
+
         for (int i = 0; i < MAX_TARGETS; i++)
         {
             string objName = "Target" + i;
             var gameObj = new GameObject(objName);
-            Debug.Log("Created Target" +i);
 
+            //Add to array
+            targets[i] = gameObj;
 
             // Add Logic Script
             string ScriptName = "TargetLogic";
             System.Type MyScriptType = System.Type.GetType(ScriptName + ",Assembly-CSharp");
             gameObj.AddComponent(MyScriptType);
-
-            Debug.Log("Added Script to Target" + i);
 
             // Add Box Collider
             gameObj.AddComponent<BoxCollider2D>();
@@ -52,6 +55,9 @@ public class Game : MonoBehaviour
 
             // Change Sprite
             gameObj.transform.GetComponent<SpriteRenderer>().sprite = SPRITES[i % 6];
+
+            // Disable for now
+            gameObj.SetActive(false);
 
         }
 #endif
@@ -67,25 +73,21 @@ public class Game : MonoBehaviour
 #else
         if (finished)
         {
-            Debug.Log("Complete!");
-            this.clickAnalytics.printDataPoints();
-            this.gazeAnalytics.printDataPoints();
-            this.clickAnalytics.saveData("clickData.txt");
-            this.gazeAnalytics.saveData("gazeData.txt");
+            // Debug.Log("Complete!");
+
+            this.performanceAnalytics.saveData("performance.csv");
             AppHelper.Quit();
         }
         else
         {
             if(newTarget)
             {
-                // Grab the current target
-                string objName = "Target" + currentTarget;
-                var gameObj = GameObject.Find(objName);
-                Debug.Log("grabbed target " + currentTarget);
+                // Enable
+                var gameObj = targets[currentTarget];
+                gameObj.SetActive(true);
 
                 // Make it visible
                 gameObj.GetComponent<TargetLogic>().showTarget();
-                Debug.Log("making target " + currentTarget + "visible");
                 newTarget = false;
             }
             else
@@ -93,15 +95,19 @@ public class Game : MonoBehaviour
                 // Grab the current target
                 string objName = "Target" + currentTarget;
                 var gameObj = GameObject.Find(objName);
-                Debug.Log("grabbed target " + currentTarget);
 
-                if (gameObj.GetComponent<TargetLogic>().clicked)
+                if (gameObj.GetComponent<TargetLogic>().isClicked())
                 {
                     // Store data into analytics class
-                    this.clickAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().sw_click.latency());
-                    this.gazeAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().sw_gaze.latency());
+
+                    performanceAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().sw_click.latency());
+                    performanceAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().sw_gaze.latency());
+                    performanceAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().distFromGaze);
+                    performanceAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().getX());
+                    performanceAnalytics.addDataPoint(currentTarget, gameObj.GetComponent<TargetLogic>().getY());
+
                     gameObj.SetActive(false);
-                    Delay(5.0f);
+                    StartCoroutine(Delay(5.0f));
                     newTarget = true;
                     currentTarget++;
                     
@@ -114,9 +120,9 @@ public class Game : MonoBehaviour
             }
         }
 #endif
-    }
+        }
 
-    private IEnumerable Delay(float seconds)
+        private IEnumerator Delay(float seconds)
     {
         yield return new WaitForSecondsRealtime(seconds);
     }

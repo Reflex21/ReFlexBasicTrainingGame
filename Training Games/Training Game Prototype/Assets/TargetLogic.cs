@@ -15,8 +15,12 @@ public class TargetLogic : MonoBehaviour
     public bool counted;
     public bool isVisible;
     public bool isNoticed;
+    public double distFromGaze = 0.0;
+    public double x;
+    public double y;
+    public static double range = 0.1;
 
-    public static double range = 4;
+    private Camera cam;
 
     // Start is called before the first frame update
     void Start()
@@ -25,6 +29,12 @@ public class TargetLogic : MonoBehaviour
         this.GetComponent<TargetLogic>().sw_gaze = new StopwatchWrapper();
         this.GetComponent<TargetLogic>().tobii = new TobiiHelper();
         this.transform.position = new Vector2(Random.Range(-5, 5), Random.Range(-5, 5));
+
+        this.GetComponent<TargetLogic>().cam = Camera.main;
+        Vector3 original = new Vector3(this.transform.position.x, this.transform.position.y, 0);
+        Vector3 viewPort = cam.WorldToViewportPoint(original);
+        this.GetComponent<TargetLogic>().x = viewPort.x;
+        this.GetComponent<TargetLogic>().y = viewPort.y;
         this.GetComponent<Renderer>().enabled = false;
     }
 
@@ -52,7 +62,7 @@ public class TargetLogic : MonoBehaviour
             //Destroy(gameObject);
             this.GetComponent<TargetLogic>().sw_click.stop();
             this.GetComponent<TargetLogic>().clicked = true;
-            this.GetComponent<Renderer>().enabled = false;
+            //this.GetComponent<Renderer>().enabled = false;
             print("Click");
         }
     }
@@ -68,5 +78,33 @@ public class TargetLogic : MonoBehaviour
         this.GetComponent<TargetLogic>().sw_gaze.start();
 
         this.GetComponent<Renderer>().enabled = true;
+
+        double currentX = this.transform.position.x;
+        double currentY = this.transform.position.y;
+        double dist = this.GetComponent<TargetLogic>().tobii.distanceFromGaze(currentX, currentY);
+        if(dist == -1)
+        {
+            this.distFromGaze = -1;
+        }
+        else
+        {
+            this.distFromGaze = dist -TargetLogic.range;
+        }
+        
+    }
+
+    public bool isClicked()
+    {
+        return this.GetComponent<TargetLogic>().clicked;
+    }
+
+    public double getX()
+    {
+        return this.GetComponent<TargetLogic>().x;
+    }
+
+    public double getY()
+    {
+        return this.GetComponent<TargetLogic>().y;
     }
 }
